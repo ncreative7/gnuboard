@@ -1,0 +1,1502 @@
+var sir_global_obj = {};
+$(function() {
+    sir_global_obj.loading = function( el, src, text ){
+        if( !el || !src) return;
+        if( !text ) text = "";
+        $(el).append("<span class='tmp_loading'><img src='"+src+"' title='loading...' >"+text+"</span>");
+    }
+    sir_global_obj.end = function( el ){
+        $(".tmp_loading", $(el)).remove();
+    }
+    $.nl2br = function(varTest){
+        return varTest.replace(/(\r\n|\n\r|\r|\n)/g, "<br>");
+    };
+
+    $(document).on("click", ".sv_wrap .side_memberblock_btn", function(e){
+        e.preventDefault();
+
+        var $othis = $(this),
+            mb_id = $(this).attr("data-memberblock_id"),
+            action = $(this).attr("data-action"),
+            nonce = $(this).attr("data-nonce"),
+            require_point = $(this).attr("data-point"),
+            ajax_url = g5_plugin_url+"/memberblock/ajax.block.php",
+            confirm_msg = (action === 'clear') ? '이 회원을 차단 해제 하시겠습니까?' : "이 회원을 차단 하시겠습니까?\n\n 차단하려면 "+require_point+" 포인트가 소비됩니다.";
+        
+        $othis.parent().addClass('loading');
+
+        if( !mb_id ){
+            return false;
+        }
+
+        if (!confirm( confirm_msg )) {
+            return false;
+        }
+
+        $.ajax({
+            url: ajax_url,
+            type: 'POST',
+            data: {
+                'block_mb_id': mb_id,
+                'action': action,
+                'nonce' : nonce
+            },
+            dataType: 'json',
+            cache : false,
+            async: false,
+            success: function(data, textStatus) {
+                if (data.error) {
+                    alert(data.error);
+                }
+
+                if( typeof data.status != 'undefined' ){
+                    var side_txt = "",
+                        txt = "",
+                        attr_action="";
+
+                    if( 'is_block' === data.status ){
+                        sid_txt = "차단해제";
+                        txt = "차단해제";
+                        attr_action="clear";
+                    } else {
+                        sid_txt = "회원차단";
+                        txt = "회원차단";
+                        attr_action="block";
+                        require_point= ( typeof data.point != 'undefined' ) ? data.point : 0;
+                    }
+
+                    var $side_var = $(".sv a[data-memberblock_id='"+mb_id+"']"),
+                        side_var_i_clone = $side_var.find("i").first().clone();
+
+                    $("[data-memberblock_id='"+mb_id+"']").text(txt).attr({"data-action":attr_action});
+                    
+                    if( require_point ){
+                        $("[data-memberblock_id='"+mb_id+"']").attr({"data-point":require_point});
+                    }
+
+                    if( side_var_i_clone.length ){
+                        $side_var.text(" "+sid_txt).prepend(side_var_i_clone);
+                    } else {
+                        $side_var.text(" "+sid_txt);
+                    }
+
+                    if( typeof data.msg != 'undefined' ){
+                        alert(data.msg);
+                    }
+                }
+            },
+            error : function(request, status, error){
+                alert('false ajax :'+request.responseText);
+            },
+            complete : function(data) {
+                $othis.parent().removeClass('loading');
+            }
+        });
+
+        return false;
+    });
+
+    $(document).on("click", ".side_friend_btn, .ask_friend_manage_btn", function(e){
+        e.preventDefault();
+
+        $(this).parent().addClass('loading');
+
+        var $othis = $(this),
+            mb_id = $(this).attr("data-friend_id"),
+            action = $(this).attr("data-action"),
+            nonce = $(this).attr("data-nonce"),
+            ajax_url = g5_plugin_url+"/friend/ajax.friend.php",
+            confirm_msg = (action == 'remove') ? '친구를 삭제 하시겠습니까?' : '이 친구를 추가 하시겠습니까?';
+
+        if( !mb_id ){
+            return false;
+        }
+
+        if (!confirm( confirm_msg )) {
+            return false;
+        }
+
+        $.ajax({
+            url: ajax_url,
+            type: 'POST',
+            data: {
+                'friend_mb_id': mb_id,
+                'action': action,
+                'nonce' : nonce
+            },
+            dataType: 'json',
+            cache : false,
+            async: false,
+            success: function(data, textStatus) {
+                if (data.error) {
+                    alert(data.error);
+                }
+
+                if( typeof data.status != 'undefined' ){
+
+                    var side_txt = "",
+                        txt = "",
+                        attr_action="";
+
+                    if( 'not_friends' == data.status ){
+                        sid_txt = "친구삭제";
+                        txt = "친구 삭제";
+                        attr_action="remove";
+                    } else {
+                        sid_txt = "친구추가";
+                        txt = "친구 추가";
+                        attr_action="add";
+                    }
+
+                    var $side_var = $(".sv a[data-friend_id='"+mb_id+"']"),
+                        side_var_i_clone = $side_var.find("i").first().clone();
+
+                    $("[data-friend_id='"+mb_id+"']").text(txt).attr({"data-action":attr_action});
+
+                    if( side_var_i_clone.length ){
+                        $side_var.text(" "+sid_txt).prepend(side_var_i_clone);
+                    } else {
+                        $side_var.text(" "+sid_txt);
+                    }
+
+                    if( typeof data.msg != 'undefined' ){
+                        if (confirm( data.msg + '\n\n지금 친구 보기 페이지로 이동 하시겠습니까?')) {
+                            location.href = g5_bbs_url + "/myfriend.php";
+                        }
+                    }
+                }
+            },
+            error : function(request, status, error){
+                alert('false ajax :'+request.responseText);
+            },
+            complete : function(data) {
+                $othis.parent().removeClass('loading');
+            }
+        });
+
+        return false;
+    });
+
+    // 의뢰자, 제작자님의 연락처 확인하기
+    $('button[id^=request-],button[id^=produce-]').click(function(e){
+
+        if (!g5_mb_open) {
+            alert("다른 회원님의 정보는 자신의 회원정보를 공개해야 볼수 있습니다.\n\n비회원 이시라면 로그인이나 회원가입 해주세요.");
+            return false;
+        }
+        var $this = $(this);
+        var atmp = this.id.split('-');
+        var bo_table = atmp[1];
+        var wr_id = atmp[2];
+        var check_sub_point = atmp[3];
+
+        var ajax_url = '';
+        if ( /^request-/.test( $this.attr('id') ) ) {
+            var data_view = $this.attr('data-view');
+            if(!data_view){
+                alert("댓글을 남기셔야 연락처를 확인할수 있습니다.\n\n연락처 확인후에는 댓글의 수정, 삭제가 불가하므로\n의뢰인의 연락처는 신중하게 확인하시기 바랍니다.");
+                return false;
+            }
+            if( check_sub_point && parseInt(check_sub_point) > 0 && !$this.data("chk_sub") ){
+                if (!confirm('제작의뢰 게시판에서 연락처를 확인할 경우 포인트 '+check_sub_point+'점이 차감됩니다.\n\n 정말 연락처를 확인하시겠습니까?')) {
+                    return false;
+                }
+            }
+            $this.data("chk_sub", true);
+            ajax_url = g5_bbs_url+'/ajax.request.php';
+        } else {
+            ajax_url = g5_bbs_url+'/ajax.produce.php';
+        }
+
+        $.ajax({
+            url: ajax_url,
+            type: 'POST',
+            data: {
+                'bo_table': bo_table,
+                'wr_id': wr_id
+            },
+            dataType: 'json',
+            async: false,
+            success: function(data, textStatus) {
+                //alert(data);
+                if (data.error) {
+                    alert(data.error);
+                    return false;
+                }
+
+                var rayer_id = 'request_rayer_'+wr_id,
+                    element_layer = document.getElementById(rayer_id);
+                if (element_layer == null) {
+                    var $temp_el = $('<div></div>').css({"font-size":"14px", "padding":"1em 5px"}).html($.nl2br(data.result)),
+                        $str_html = $temp_el.clone().wrapAll("<div/>").parent().html();
+                    sir_global_obj.request_rayer = $('<div></div>').attr("id", rayer_id).html($str_html).dialog({autoOpen:true,title: '연락처 확인하기'});
+                } else {
+
+                    if (typeof(sir_global_obj.request_rayer) != 'undefined' && sir_global_obj.request_rayer.is(':ui-dialog')) {
+                        sir_global_obj.request_rayer.dialog('open');
+                    }
+                }
+
+                //alert(data.result);
+            }
+        });
+        //e.preventDefault();
+        //e.stopPropagation();
+        return false;
+    });
+
+    // 사이드뷰 : 회원이름 클릭시 나오는 레이어
+    $('a[id^=sideview-]').click(function(e){
+        /*
+        if (!g5_mb_open) {
+            alert("다른 회원님의 정보는 자신의 회원정보를 공개해야 볼수 있습니다.\n\n비회원 이시라면 로그인이나 회원가입 해주세요.");
+            return false;
+        }
+        */
+        var $this = $(this);
+        var atmp = this.id.split('-');
+        var mb_id = atmp[1];
+        var bo_table = atmp[2];
+        if (!mb_id) {
+            alert('비회원님의 경우 볼수 있는 정보가 없습니다.');
+            return false;
+        }
+        $.ajax({
+            url: g5_bbs_url+'/ajax.sideview.php',
+            type: 'POST',
+            data: {
+                'mb_id': mb_id,
+                'bo_table': bo_table
+            },
+            dataType: 'json',
+            async: false,
+            success: function(data, textStatus) {
+                //alert(data);
+                if (data.error) {
+                    alert(data.error);
+                    return false;
+                }
+
+                if ($('#sideview').length) {
+                    $('#sideview').remove();
+                }
+
+                var s = '';
+                for (var i=0; i<data.list.length; i++) {
+                    var title  = data.list[i].title;
+                    var target = data.list[i].target;
+                    var href   = data.list[i].href;
+                    s += "<li><a href=\""+href+"\" target=\""+target+"\">"+title+"</a></li>";
+                }
+                s = "<ul id='sideview'>"+s+"</ul>";
+                //alert(s);
+                /*
+                $(this).children('div').toggleClass('sideview');
+                $(this).children('div').html(s).fadeTo('slow',0.85).delay(1000).fadeOut('slow');
+                */
+                $this.after(s);
+            }
+        });
+        //e.preventDefault();
+        e.stopPropagation();
+    });
+
+    // 이 게시물을 ... 미채택완료
+    $('button[id^=choice_end-]').click(function(e){
+        if (!confirm('정말 이 게시물을 미채택완료 하시겠습니까?')) {
+            return false;
+        }
+        var $this = $(this);
+        var atmp = this.id.split('-');
+        $.ajax({
+            url: g5_bbs_url+'/ajax.choice_end.php',
+            type: 'POST',
+            data: {
+                'bo_table': atmp[1],
+                'wr_id': atmp[2]
+            },
+            dataType: 'json',
+            async: false,
+            success: function(data, textStatus) {
+                if (data.error) {
+                    alert(data.error);
+                    return false;
+                }
+
+                //<span class='choice_ing' title='진행중'>진행중</span>
+                $('#view01').find('header>h1 span.choice_ing').replaceWith("<span class='choice_failed'>미채택</span>");
+                alert('이 게시물을 미채택완료 하였습니다.');
+            }
+        });
+        e.preventDefault();
+    });
+
+    // 이 게시물을 ... 재등록
+    $('button[id^=rewrite-]').click(function(e){
+        if (!confirm("정말 이 게시물을 재등록 하시겠습니까?\n\n재등록 하시는 경우 이 게시물은 미채택완료 됩니다.")) {
+            return false;
+        }
+        var $this = $(this);
+        var atmp = this.id.split('-');
+        $.ajax({
+            url: g5_bbs_url+'/ajax.rewrite.php',
+            type: 'POST',
+            data: {
+                'bo_table': atmp[1],
+                'wr_id': atmp[2]
+            },
+            dataType: 'json',
+            async: false,
+            success: function(data, textStatus) {
+                if (data.error) {
+                    alert(data.error);
+                    return false;
+                }
+
+                //<span class='choice_ing' title='진행중'>진행중</span>
+                //$('#view01').find('header>h1 span.choice_ing').replaceWith("<span class='choice_failed'>미채택</span>");
+                alert('이 게시물을 재등록 하였습니다.');
+                document.location.href = data.href;
+            }
+        });
+        e.preventDefault();
+    });
+
+    // 스크랩
+    /*
+    $('button[id^=scrap-]').click(function(e){
+        var $this = $(this);
+        var atmp = this.id.split('-');
+        var amsg = $this.attr('class');
+        $.ajax({
+            url: g5_bbs_url+'/ajax.scrap.php',
+            type: 'POST',
+            data: {
+                'bo_table': atmp[1],
+                'wr_id': atmp[2]
+            },
+            dataType: 'json',
+            async: false,
+            success: function(data, textStatus) {
+                if (data.error) {
+                    alert(data.error);
+                    return false;
+                }
+
+
+
+                $this.children('strong').text(data.count);
+
+                //$("div#"+amsg+">.sir_pop_msg").text(data.message);
+
+                //$("div#"+amsg).show();
+            }
+        });
+        e.preventDefault();
+    });
+    */
+
+    function excute_good(href, $el, $tx, type)
+    {
+        var atmp = $el.attr("data-action").split('-');
+        var flag = atmp[0];
+        var bo_table = atmp[1];
+        var wr_id = atmp[2];
+
+        $.post(
+            g5_bbs_url+'/ajax.good.php',
+            { js: "on", 'flag': flag, 'bo_table': bo_table, 'wr_id': wr_id },
+            function(data) {
+                if(data.error) {
+                    alert(data.error);
+                    return false;
+                }
+
+				if( type == 'cmt' || type == 'undefined' ) {
+					// 댓글
+					if (typeof(data.re_action) != "undefined") {
+						$el.removeClass("me_choose").find(".comment-gng-count").text(number_format(String(data.count)));
+					} else if(data.count) {
+						$el.addClass("me_choose").find(".comment-gng-count").text(number_format(String(data.count)));
+					}
+				} else {
+					// 게시글
+					if (typeof(data.re_action) != "undefined") {
+						$el.removeClass("me_choose").find("strong").text(number_format(String(data.count)));
+						$tx.stop().hide();
+					} else if(data.count) {
+						$el.addClass("me_choose").find("strong").text(number_format(String(data.count)));
+						if($tx.attr("id").search("nogood") > -1) {
+							$tx.text("이 글을 비추천하셨습니다.");
+							$tx.fadeIn(200).delay(2500).fadeOut(200);
+						} else {
+							$tx.text("이 글을 추천하셨습니다.");
+							$tx.fadeIn(200).delay(2500).fadeOut(200);
+						}
+					}
+				}
+            }, "json"
+        );
+    }
+
+    // 추천, 비추천
+    $(document).on("click", "#good_button, #nogood_button", function(e) {
+        e.preventDefault();
+
+        var $tx;
+        if(this.id == "good_button")
+            $tx = $("#bo_v_act_good");
+        else
+            $tx = $("#bo_v_act_nogood");
+        
+        if( $(this).attr("id") === "nogood_button" && $(this).attr("data-point") && ! $(this).hasClass("me_choose") ){
+            if ( ! confirm("이 글을 "+ $(this).attr("data-title") +" 시 포인트가 "+ $(this).attr("data-point") +" 점 차감됩니다.\n\n정말 실행 하시겠습니까? ") ){
+                return false;
+            }
+        }
+
+        excute_good(this.href, $(this), $tx, 'brd');
+        return false;
+    });
+
+    $(document).on("click", ".bo_v_good, .bo_v_nogood", function(e) {
+        e.preventDefault();
+
+        if( $(this).attr("data-href") ){
+            if ( confirm("로그인이 필요합니다.\n\n로그인 하시겠습니까?") ){
+                location.href = $(this).attr("data-href");
+            }
+        }
+    });
+
+    // 좋아요, 싫어요
+    $('button[id^=good-], button[id^=nogood-]').click(function() {
+        var $this = $(this);
+        var atmp = this.id.split('-');
+        var amsg = $this.attr('class');
+        var flag = atmp[0];
+        var bo_table = atmp[1];
+        var wr_id = atmp[2];
+        $.ajax({
+            'url': g5_bbs_url+'/ajax.good.php',
+            'type': 'POST',
+            'async': false,
+            'data': {
+                'flag': flag,
+                'bo_table': bo_table,
+                'wr_id': wr_id
+            },
+            'dataType': 'json',
+            'success': function(data) {
+                if (data.error) {
+                    alert(data.error);
+                    return false;
+                }
+                $("div.sir_pop").hide();
+                $("div#"+amsg+">.sir_pop_msg").text(data.message);
+                $("div#"+amsg).show();
+                $this.find('strong').text(data.count);
+            }
+        });
+    });
+	
+	// 댓글 추천/비추천
+	$(document).on("click", ".comment-good-btn", function() {
+		
+        excute_good('', $(this), $(this), 'cmt');
+
+	});
+
+    // 네티즌 추천
+    $('a[id^=netizen_recom-]').click(function() {
+        var $this = $(this);
+        var atmp = this.id.split('-');
+        var amsg = $this.attr('class');
+        var flag = atmp[0];
+        var bo_table = atmp[1];
+        var wr_parent = atmp[2];
+        var comment_id = atmp[3];
+        var tmsg = "추천";
+        
+        if ( confirm("정말 "+tmsg+" 하시겠습니까? ") ){
+            $.ajax({
+                'url': g5_bbs_url+'/ajax.netizen_recom.php',
+                'type': 'POST',
+                'async': false,
+                'data': {
+                    'flag': flag,
+                    'bo_table': bo_table,
+                    'comment_id': comment_id,
+                    'wr_parent' : wr_parent,
+                    'wr_id' : wr_parent
+                },
+                'dataType': 'json',
+                'success': function(data) {
+                    if (data.error) {
+                        alert(data.error);
+                        return false;
+                    }
+                    $this.find("b").text(data.count);
+                    $("div.sir_pop").hide();
+                    $this.siblings(".sir_pop").find(".sir_pop_msg").text(data.message).end().show();
+                }
+            });
+        }   // end if
+    });
+    // 신고
+    $(document).on('click', 'button[id^=comment_singo-], button[id^=singo-]', function(e) {
+        e.preventDefault();
+        /*
+        $this = $(this);
+        var atmp = this.id.split('-');
+        var amsg = $this.attr('class');
+        var id = atmp[0]; // singo 와 comment_singo 를 구분
+        var bo_table = atmp[1];
+        var wr_id = atmp[2];
+        var radios_reason = ["#rdo_reason_ad", "#rdo_reason_ob", "#rdo_reason_ha", "#rdo_reason_etc"];
+        $("#sir_react_singod").dialog({
+            modal: true,
+            buttons: {
+                "신고하기": function() {
+                    //if (!$("#rdo_reason_ad").attr("checked") && !$("#rdo_reason_etc").attr("checked")) {
+                    //    alert("신고사유를 선택하세요.");
+                    //    return false;
+                    //}
+                    var othis = this;
+                    var r_checked = false;
+                    $.each( radios_reason, function( k, v ){
+                        if( $(v).attr("checked") ){
+                            r_checked = true;
+                            return false;
+                        }
+                    });
+                    if( !r_checked ){
+                        alert("신고사유를 선택하세요.");
+                        return false;
+                    }
+                    if ($( radios_reason[3] ).attr("checked")) {
+                        if ($.trim($("#sg_reason").val()).length < 10) {
+                            alert("기타 선택시 신고사유를 10글자 이상 입력하십시오.");
+                            return false;
+                        }
+                    }
+                    var reason = '';
+                    if( $( radios_reason[0] ).attr("checked") ){
+                        reason = "광고";
+                    } else if ( $( radios_reason[1] ).attr("checked") ) {
+                        reason = "음란";
+                    } else if ( $( radios_reason[2] ).attr("checked") ) {
+                        reason = "혐오";
+                    } else {
+                        reason = $("#sg_reason").val();
+                    }
+                    var $dialog = $(this)
+                    $.ajax({
+                        'url': g5_bbs_url+'/ajax.singo.php',
+                        'type': 'POST',
+                        'async': false,
+                        'data': {
+                            'bo_table': bo_table,
+                            'wr_id': wr_id,
+                            'reason': reason
+                        },
+                        'dataType': 'json',
+                        'beforeSend' : function(){
+                             sir_global_obj.loading( $(othis).parent().find(".ui-dialog-buttonpane") , g5_url+"/img/loadinfo.net.gif" , "처리중...");
+                        },
+                        'success': function(data) {
+                            sir_global_obj.end( $(othis).parent().find(".ui-dialog-buttonpane") );
+                            if (data.error) {
+                                alert(data.error);
+                                return false;
+                            }
+                            $dialog.dialog("close");
+                            if (id == 'singo') {
+                                $("div.sir_pop").hide();
+                                $("div#"+amsg+">.sir_pop_msg").text(data.message);
+                                $("div#"+amsg).show();
+                                $this.children('strong').text(data.count);
+                            } else {
+                                alert(data.message);
+                            }
+                        }
+                    });
+                },
+                "취소": function() {
+                    $(this).dialog("close");
+                }
+            }
+        });
+        */
+        if (!confirm('이 게시물을 신고 하시겠습니까?\n\n신고는 취소가 불가합니다.\n\n주의) 허위 신고시 신고자의 서비스 이용이 제한됩니다.')) {
+            //alert('신고를 취소 하셨습니다.');
+            return false;
+        }
+
+        var $this = $(this);
+        var atmp = this.id.split('-');
+        var id = atmp[0]; // singo 와 comment_singo 를 구분
+        var bo_table = atmp[1];
+        var wr_id = atmp[2];
+        var amsg = $this.attr('class');
+        $.ajax({
+            'url': g5_bbs_url+'/ajax.singo.php',
+            'type': 'GET',
+            'async': false,
+            'data': {
+                'bo_table': g5_bo_table,
+                'wr_id': wr_id,
+                //'reason': '신고' // 당분간 이유없음 - 다음번에는 레이어로 수정할것
+                'reason': id // 당분간 이유없음 - 다음번에는 레이어로 수정할것
+            },
+            'dataType': 'json',
+            'success': function(data) {
+                if (data.error) {
+                    alert(data.error);
+                    return false;
+                }
+                if (id == 'singo') {
+                    //$('.view_main_singo strong').text(data.count);
+                    //$('.view_main_singo div').text(data.message).fadeTo('slow',0.85).delay(1000).fadeOut('slow');
+
+                    //$("div#"+amsg+">.sir_pop_msg").text(data.message);
+                    //$("div#"+amsg).show();
+                    $this.find(".si_ic").children('strong').text(data.count);
+
+                } else {
+                    alert(data.message);
+                }
+            }
+        });
+    });
+
+    $(".sir_pop_close").click(function() {
+        $(this).parent('div').hide();
+    });
+
+    $('.blind_view').click(function(e) {
+        $(this).parents('.sir_singo_msg').next('.singo_view').toggle();
+    }).addClass('st_pointer');
+
+    /*
+    // 썸네일 이미지 클릭
+    $('.thumb').click(function() {
+        //window.open($(this).attr('rel'), '_blank', '');
+        window.open($(this).attr('rel'));
+    }).addClass('st_pointer');
+    */
+
+    $('.sirglegif').css('border','0');
+
+    // 게시물 관리 닫기
+    $('body').click(function(){
+        if ($('#sideview').is(':visible')) $('#sideview').hide();
+    });
+
+    $('#tail-top').click(function(){
+        $(window).scrollTop(0);
+    });
+
+    // 게시물 주소 복사
+    $('.sir_inp_cu').hover(function() {
+        $(this).select();
+    });
+
+
+    // modal
+    $(".modal-open").on("click", function() {
+        var modalId = $(this).data("modal");
+
+        $("#modal_" + modalId ).css("display", "flex");
+    });
+
+    $("body").on("click", function (e) {
+        if (e.target.className == "modal") {
+            $(".modal").hide();    
+        }
+    });
+
+    $(".modal-close").on("click", function() {
+        $(".modal").hide();
+    });
+
+    $(".modal-agree").on("click", function() {
+        var modalId = $(this).data("modal");
+
+        $("#terms_" + modalId).prop("checked", "checked");
+        $(".modal").hide();
+    });
+
+
+}); //end $(function)
+
+function file_download(link, file) {
+    if (g5_download_level>1 && g5_download_point!=0) {
+        if (confirm("'"+file+"' 파일을 다운로드 하시면 포인트가 차감("+g5_download_point+"점)됩니다.\n\n포인트는 게시물당 한번만 차감되며 다음에 다시 다운로드 하셔도 중복하여 차감하지 않습니다.\n\n그래도 다운로드 하시겠습니까?")) {
+            document.location.href=link;
+        }
+    } else {
+        document.location.href=link;
+    }
+}
+
+function all_checked(sw) {
+    var f = document.fboardlist;
+
+    for (var i=0; i<f.length; i++) {
+        if (f.elements[i].name == "chk_wr_id[]")
+            f.elements[i].checked = sw;
+    }
+}
+
+function check_confirm(str) {
+    var f = document.fboardlist;
+    var chk_count = 0;
+
+    for (var i=0; i<f.length; i++) {
+        if (f.elements[i].name == "chk_wr_id[]" && f.elements[i].checked)
+            chk_count++;
+    }
+
+    if (!chk_count) {
+        alert(str + "할 게시물을 하나 이상 선택하세요.");
+        return false;
+    }
+    return true;
+}
+
+// 선택한 게시물 삭제
+function select_delete(relative) {
+    var f = document.fboardlist;
+
+    str = "삭제";
+    if (!check_confirm(str))
+        return;
+
+    if (!confirm("선택한 게시물을 정말 "+str+" 하시겠습니까?\n\n한번 "+str+"한 자료는 복구할 수 없습니다"))
+        return;
+
+    if( relative ){
+        f.action = "./delete_all.php";
+    } else {
+        f.action = g5_bbs_url+"/delete_all.php";
+    }
+    f.submit();
+}
+
+// 선택한 게시물 복사 및 이동
+function select_copy(sw, relative) {
+    var f = document.fboardlist;
+
+    if (sw == "copy")
+        str = "복사";
+    else
+        str = "이동";
+
+    if (!check_confirm(str))
+        return;
+
+    var sub_win = window.open("", "move", "left=50, top=50, width=500, height=550, scrollbars=1");
+
+    f.sw.value = sw;
+    f.target = "move";
+    if( relative ){
+        f.action = "./move.php";
+    } else {
+        f.action = g5_bbs_url+"/move.php";
+    }
+    f.submit();
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// 댓글
+////////////////////////////////////////////////////////////////////////////////
+$(document).ready(function(){
+
+    $(document).on('click', 'a[id^=choice-]', function(e){
+
+        var $this = $(this),
+            atmp = this.id.split('-'),
+            data_w = $this.attr("data-w"),
+            confirm_msg = (g5_is_admin && data_w === "c") ? "채택한것을 취소하겠습니까?" : "정말 이 댓글을 채택 하시겠습니까?";
+
+        if (!confirm(confirm_msg)) {
+            return false;
+        }
+        
+        $.ajax({
+            url: g5_bbs_url+'/ajax.choice.php',
+            type: 'POST',
+            data: {
+                'bo_table': atmp[1],
+                'wr_parent': atmp[2],
+                'comment_id': atmp[3],
+                'wr_id': atmp[2],
+                'w':data_w
+            },
+            dataType: 'json',
+            async: false,
+            success: function(data, textStatus) {
+				console.log(data);
+                if (data.error) {
+                    alert(data.error);
+
+                    if (g5_is_admin && data_w === "c") {
+                        $this.prev(".click-on").remove();
+                        $this.remove();
+                    }
+                    return false;
+                }
+                $this.parents('article').addClass('vcmt_pick').children('div.vcmt_name').after("<div class='vcmt_pick_msg vcmt_pick_mmsg'><span></span>작성자에 의해 채택된 답변입니다.</div>");
+                $('div.vcmt_pick_btn').remove();
+                //$('#view01').find('header>h1 span.choice_ing').replaceWith("<span class='choice_succeed'>채택됨</span>");
+                $('article>header>h1 span.choice_ing').replaceWith("<span class='choice_succeed'>채택됨</span>");
+                $('.vcmt_pick_btn').hide();
+                alert('이 댓글을 채택 하였습니다.');
+            }
+        });
+        e.preventDefault();
+    });
+
+    $('a[id^=cmt_choice-]').click(function(){
+        var comment_id = this.id.split('-')[1];
+        alert(comment_id);
+    });
+
+    // 코멘트 답변
+    /*
+    $('.cmt_reply').bind('click', function() {
+        var f = $('#fcomment').get(0);
+        f.w.value = 'c';
+        f.comment_id.value = this.title;
+        f.wr_content.value = '';
+        //alert($(this).parents().find('.comment_area').html());
+        $(this).parents('article.vcmt').append( $('#vbo_wcmt') );
+            //.css('margin-top', '10px')
+    });
+    */
+
+    // 코멘트 수정
+    /*
+    $('.cmt_edit').bind('click', function() {
+        var f = $('#fcomment').get(0);
+        f.w.value = 'cu';
+        f.comment_id.value = this.title;
+        $(this).parents('article.vcmt').append( $('#vbo_wcmt') );
+        //$(this).parents('article.vcmt').append( $('#vbo_wcmt').css('margin-top', '10px'));
+
+        $.ajax({
+            async: false,
+            cache: false,
+            type: 'GET',
+            dataType: 'xml',
+            url: g5_bbs_url+'/ajax.comment_get.php',
+            data: {
+                'bo_table': f.bo_table.value,
+                'comment_id': f.comment_id.value
+            },
+            success: function(xml) {
+                if ($(xml).find('list').find('item').length > 0) {
+                    var secret  = $(xml).find('list').find('item').find('secret').text();
+                    var content = $(xml).find('list').find('item').find('content').text();
+                    if (typeof(f.wr_secret) != 'undefined') {
+                        f.wr_secret.checked = (secret=='secret') ? 'checked' : '';
+                    }
+                    f.wr_content.value = content;
+                }
+            }
+        });
+    });
+    */
+
+    // 코멘트 삭제
+    $(document).on('click', '.cmt_del', function(event) {
+        //comment_delete(this.href);
+        del(this.href);
+        /*
+        if (confirm('이 코멘트를 삭제하시겠습니까?')) {
+            //location.href = this.href;
+            alert(this.href);
+            comment_delete(this.href);
+            event.preventdefault();
+            return false;
+        }
+        */
+    });
+
+    $('#fcomment').attr('autocomplete', 'off');
+
+    // 공지사항 창닫기
+    $('.i_notice>span').click(function(){
+        var $div = $(this).parent('div');
+        var arr = $div.attr('id').split('-');
+        var wr_id = arr[1];
+        set_cookie('ck_notice_'+wr_id, g5_time_ymdhis, 24*3, g5_cookie_domain);
+        $div.slideUp('slow');
+    })
+    .css('cursor', 'pointer')
+    .attr('title', '3일동안 보이지 않기');
+});
+
+// 댓글 폼 전송
+function fcomment_submit(f)
+{
+    var pattern = /(^\s*)|(\s*$)/g; // \s 공백 문자
+
+    var subject = "";
+    var content = "";
+    $.ajax({
+        url: g5_bbs_url+"/ajax.filter.php",
+        type: "POST",
+        data: {
+            "subject": "",
+            "content": f.wr_content.value
+        },
+        dataType: "json",
+        async: false,
+        cache: false,
+        success: function(data, textStatus) {
+            subject = data.subject;
+            content = data.content;
+        }
+    });
+
+    if (content) {
+        alert("내용에 금지단어('"+content+"')가 포함되어있습니다");
+        f.wr_content.focus();
+        return false;
+    }
+
+    // 양쪽 공백 없애기
+    var pattern = /(^\s*)|(\s*$)/g; // \s 공백 문자
+    document.getElementById('wr_content').value = document.getElementById('wr_content').value.replace(pattern, "");
+    if (char_min > 0 || char_max > 0)
+    {
+        check_byte('wr_content', 'char_count');
+        var cnt = parseInt(document.getElementById('char_count').innerHTML);
+        if (char_min > 0 && char_min > cnt)
+        {
+            alert("코멘트는 "+char_min+"글자 이상 쓰셔야 합니다.");
+            return false;
+        } else if (char_max > 0 && char_max < cnt)
+        {
+            alert("코멘트는 "+char_max+"글자 이하로 쓰셔야 합니다.");
+            return false;
+        }
+    }
+    else if (!document.getElementById('wr_content').value)
+    {
+        alert("코멘트를 입력하여 주십시오.");
+        return false;
+    }
+
+    if(typeof(f.captcha_key) != 'undefined'){
+        if (!chk_captcha()) return false;
+    }
+
+    set_comment_token(f);
+
+    return true;
+}
+
+// ajax 회원로그인 검사
+function chk_ajax_login(mb_id, mb_password)
+{
+    var is_valid_member;
+    $.ajax({
+        url: g5_bbs_url+'/ajax.login_check.php',
+        type: 'POST',
+        data: {
+            'mb_id': mb_id,
+            'mb_password': mb_password
+        },
+        dataType: 'json',
+        async: false,
+        success: function(data, textStatus) {
+            if (data.error) {
+                alert(data.error);
+                is_valid_member = false;
+            } else {
+                is_valid_member = true;
+            }
+        }
+    });
+
+    return is_valid_member;
+}
+
+// 탈퇴의 경우 아래 코드를 연동하시면 됩니다.
+function memberLeave() {
+  if (confirm("정말 회원에서 탈퇴 하시겠습니까?"))
+    location.href = g5_bbs_url+"/member_confirm.php?url=member_leave.php";
+}
+
+// http://stackoverflow.com/a/8532436/1701940
+function token() {
+    return Math.random().toString(36).substr(2); // remove `0.`
+}
+
+$(function() {
+    // 브라우저 스크롤 이벤트
+    $(".scroller").click(function(event){
+        event.preventDefault();
+        $('html,body').animate({scrollTop:$(this.hash).offset().top}, 500);
+    });
+
+    // 슬라이드 인&아웃
+    $(".slide-inner").css({display: "block", opacity: 0});
+    $("[class*=slider-]").hover(function(){
+        var split = $(this).attr("class").match(/(slider-[^\s]+)/);
+        var effect = split[1].split("-");
+        var $el = $(this).find(".slide-inner");
+        $el.addClass("slide-inner-on");
+        SlideIn($el, effect[1], effect[2], effect[4]);
+    }, function(){
+        var split = $(this).attr("class").match(/(slider-[^\s]+)/);
+        var effect = split[1].split("-");
+        var $el = $(this).find(".slide-inner");
+        SlideOut($el, effect[1], effect[3], effect[4]);
+        $el.removeClass("slide-inner-on");
+    });
+});
+
+// 슬라이드 인
+function SlideIn($el, start, fill, value) { // 엘리먼트, 시작위치, opacity값, 이동값
+    var effect = {opacity: ""+fill+""};
+    effect[""+start] = "+="+ value;
+    $el.stop(true, true).animate(effect, "fast");
+}
+
+// 슬라이드 아웃
+function SlideOut($el, start, fill, value) { // 엘리먼트, 시작위치, opacity 값, 이동값
+    var effect = {opacity: ""+fill+""};
+    effect[""+start] = "-="+ value;
+    $el.stop(true, true).animate(effect, "fast");
+}
+
+// a 태그에서 onclick 이벤트를 사용하지 않기 위해
+function win_open(url, name, option)
+{
+    var popup = window.open(url, name, option);
+    popup.focus();
+}
+
+sir_global_obj.tag_ajax_post = function(action, format, params, callback)
+{
+    if( !format ){
+        format = "text";
+    }
+    //$.extend(params, {qa:'ajax', qa_operation:operation, qa_root:qa_root, qa_request:qa_request});
+    $.post(action, params, function( data ) {
+        callback( data );
+    }, format).error(function(jqXHR) { if (jqXHR.readyState>0) callback([]) });
+}
+
+sir_global_obj.tag_delete_after = function(){
+    var $box = $("#board_favorite_tags");
+
+    if( $box.children(".tag-follow").length > 0 ){
+        $box.find(".fav-empty").remove();
+    } else {
+        var msg = '<div class="fav-empty">관심태그를 등록해보세요.</div>';
+        ;
+        $box.append(msg);
+    }
+}
+
+sir_global_obj.favorite_tag_delete = function(el, mode) //관심태그 지정
+{
+    if( typeof g5_qa_url !== 'undefined' ){  //qa에서만 동작합니다.
+        if( g5_qa_url.length > 0 )
+            return q2a_votes.favorite_tag_delete(el, mode);
+    }
+
+    if( g5_bo_table === undefined ){
+        alert('g5_bo_table 값이 없습니다.');
+        return;
+    }
+
+    var action = g5_bbs_url+'/ajax.favorite_tags.php'
+        ,format = 'json'
+        ,cat_id = $(el).attr('data-catid')
+        ,s_tag = $(el).attr('data-tag')
+        ,tagmode = 'del'
+        ,data_mod = $(el).attr('data-mod')
+        ,data_href = $(el).attr('href'),
+        item_class1 = "fa-heart",
+        item_class2 = "fa-heart-o";
+
+        if( mode == "delete"){
+            data_mod = "delete";
+        }
+    if( data_mod == "read" ){
+        document.location.href = data_href;
+        return false;
+    } else if( data_mod == "delete" ){
+        sir_global_obj.tag_ajax_post(action, format, {cat_id:cat_id, tagmode:tagmode, s_tag : s_tag, bo_table : g5_bo_table},
+            function(data) {
+                if( data ){
+                    if (data.error) {
+                        alert(data.error);
+                        return false;
+                    }
+                    if( data.cat_id ){
+                        /*
+                        $(el).fadeOut(300, function() {
+                            $(this).remove();
+                            if ( $("#board_favorite_tags > div").children().length == 0 )
+                            {
+                                $("#board_favorite_tags").removeClass("qa_favorites_view");
+                            }
+                        });
+                        */
+                        $(el).parent(".tag-follow").fadeOut(300, function() {
+                            $(this).remove();
+                            if ( $("#board_favorite_tags").children().length == 0 )
+                            {
+                                $("#board_favorite_tags").removeClass("qa_favorites_view");
+                            }
+
+                            sir_global_obj.tag_delete_after();
+                        });
+
+                        // $(".board_add_tag_btn").children("a").each( function(){
+                        //     if( $(this).text() == data.s_tag ){
+                        //         $(this).removeClass("my_tagged_interesting");
+                        //     }
+                        // });
+
+                        $(".board_add_tag_btn").each(function(){
+                            if( $(this).attr("data-tag") == data.s_tag ){
+                                $(this).attr({ "data-tag" : data.s_tag, "data-catid" : data.cat_id, "data-action" : "add", "title" : data.s_tag+" 관심태그에 추가" });
+                            }
+                        });
+
+                        $(".co-tag button.btn-add").each( function(){
+                            if( $(this).attr("data-tag") == data.s_tag ){
+                                $(this).attr({ "data-tag" : data.s_tag, "data-catid" : data.cat_id, "data-action" : "add", "title" : data.s_tag+" 관심태그에 추가" })
+                                .children("i").removeClass(item_class1).addClass(item_class2);
+                            }
+                        });
+                    }
+                } else {
+                    othis.fn_error();
+                }
+            }
+        );
+    }
+    return false;
+}
+
+$(document).ready(function(){
+
+    $(".tog_trg_btn").click(function(){
+        var $this = $(this);
+        var togSet = $this.data('set');
+        var $togLbl = $this.children(".tog_stat");
+        var togText = $togLbl.text();
+        $(".tog_" + togSet).toggleClass("tog-open");
+        $togLbl.text(
+            togText == "열기" ? "닫기" : "열기"
+        );
+    });
+
+    var $board_tag_div = $("#board_favorite_tags"),
+        $edit_btn = $("#edit_board_favorite_tag");
+
+    $edit_btn.on("click", function(e){
+        e.preventDefault();
+        if ($board_tag_div.is(".is_tag_edit")) {
+            $board_tag_div.removeClass("is_tag_edit");
+        } else {
+            $board_tag_div.addClass("is_tag_edit");
+        }
+        $(".tag-mng-link").each( function(){
+            $(this).attr({ "title" : $(this).attr("data-tag")+" 관심태그 삭제", "data-mod" : "delete" })
+        });
+    });
+
+    $edit_btn.on("clickoutside", function(e){
+        $board_tag_div.removeClass("is_tag_edit");
+        $(".tag-mng-link").each( function(){
+            $(this).attr({ "title" : $(this).attr("data-tag") , "data-mod" : "read" })
+        });
+    });
+
+    $(".board_add_tag_btn, .co-tag button.btn-add").bind("click", function(e){
+        e.preventDefault();
+
+        if( typeof g5_qa_url !== 'undefined' ){  //qa에서 아래 동작을 하지 않음
+            if( g5_qa_url.length > 0 )
+                return;
+        }
+
+        if( g5_bo_table === undefined ){
+            alert('g5_bo_table 값이 없습니다.');
+            return;
+        }
+
+        var action = g5_bbs_url+'/ajax.favorite_tags.php'
+            ,format = 'json'
+            ,s_tag = $(this).attr('data-tag')
+            ,tagmode = $(this).attr('data-action')
+            ,cat_id = $(this).attr('data-catid')
+            ,othis = $(this),
+            $add_tag_btn = $(".board_add_tag_btn"),
+            $item_tag_btn = $(".co-tag button.btn-add"),
+            item_class1 = "fa-heart",
+            item_class2 = "fa-heart-o";
+
+        if( tagmode == "add"){
+            sir_global_obj.tag_ajax_post(action, format, {s_tag:s_tag, tagmode:tagmode, cat_id : cat_id, bo_table : g5_bo_table},
+                function(data) {
+
+                    if( data ){
+                        if (data.error) {
+                            alert(data.error);
+                            return false;
+                        }
+                        if( data.s_tag ){
+                            $board_tag_div.removeClass("empty");
+                            var s_tag = encodeURIComponent(data.s_tag);
+                            //var str = "<div class=\"item\"><a href='#' data-href='"+g5_bbs_url+"?s_tag="+s_tag+"' class=\"a tag-mng-link\" data-mod='read' data-tag='"+data.s_tag+"' title='"+data.s_tag+"' data-catid='"+data.cat_id+"' onclick=\"return sir_global_obj.favorite_tag_delete(this);\" >#"+data.s_tag+"</a></div>";
+
+                            var tag_href = g5_url+"/"+g5_bo_table+"?s_tag="+s_tag;
+                            var str = "<div class=\"tag-follow\">\n<a href='"+tag_href+"' data-href='"+tag_href+"' class=\"link tag-mng-link\" title='"+data.s_tag+"' >#"+data.s_tag+"</a>\n<button type=\"button\" class=\"btn-add\" data-mod=\"delete\" data-tag=\""+data.s_tag+"\" onclick=\"return sir_global_obj.favorite_tag_delete(this);\"><i class=\"fa fa-heart\"></i><span class=\"blind\">"+data.s_tag+"를 관심태그에서 제거</span></button>\n</div>";
+                            $board_tag_div.addClass("board_favorites_view");
+
+                            //$(str).insertBefore( "#board_favorite_tags > div > p" );
+                            $board_tag_div.append(str);
+                            othis.attr({ "data-tag" : data.s_tag, "data-catid" : data.cat_id, "data-action" : "del", "title" : data.s_tag+" 관심태그 삭제" }).removeClass("add_mytag").addClass("remove_mytag");
+
+                            // $(".bo-tags-list").children("a").each( function(){
+                            //     if( $(this).text() == data.s_tag ){
+                            //         $add_tag_btn.addClass("my_tagged_interesting");
+                            //     }
+                            // });
+
+                            //전체태그에서 활성화
+                            /*
+                            if( othis.hasClass("btn-add") ){
+                                othis.children("i").removeClass(item_class2).addClass(item_class1);
+                            }
+                            */
+                            $item_tag_btn.each( function(){
+                                if( $(this).attr("data-tag") == data.s_tag ){
+                                    $(this).children("i").removeClass(item_class2).addClass(item_class1);
+                                }
+                            });
+
+                            sir_global_obj.tag_delete_after();
+                        }
+                    } else {
+                        othis.fn_error();
+                    }
+                }
+            );
+        } else if( tagmode == "del" ){
+            if(typeof(g5_is_mobile) != 'undefined'){
+                tagmode = 'del';
+                sir_global_obj.tag_ajax_post(action, format, {s_tag:s_tag, tagmode:tagmode, cat_id : cat_id, bo_table : g5_bo_table},
+                    function(data){
+                        if( data ){
+                            if (data.error) {
+                                alert(data.error);
+                                return false;
+                            }
+                            if( data.s_tag ){
+                                $add_tag_btn.each(function(){
+                                    if( $(this).attr("data-tag") == data.s_tag ){
+                                        $(this).attr({ "data-tag" : data.s_tag, "data-catid" : data.cat_id, "data-action" : "add", "title" : data.s_tag+" 관심태그 추가" }).removeClass("remove_mytag").addClass("add_mytag");
+                                    }
+                                });
+
+                                //전체태그에서 활성화
+                                /*
+                                if( othis.hasClass("btn-add") ){
+                                    othis.attr({ "data-tag" : data.s_tag, "data-catid" : data.cat_id, "data-action" : "add", "title" : data.s_tag+" 관심태그 추가" });
+                                    othis.children("i").removeClass(item_class1).addClass(item_class2);
+                                }
+                                */
+                                $item_tag_btn.each( function(){
+                                    if( $(this).attr("data-tag") == data.s_tag ){
+                                        $(this).attr({ "data-tag" : data.s_tag, "data-catid" : data.cat_id, "data-action" : "add", "title" : data.s_tag+" 관심태그 추가" })
+                                            .children("i").removeClass(item_class1).addClass(item_class2);
+                                    }
+                                });
+
+                                //$board_tag_div.find("a[data-tag='"+data.s_tag+"']").remove();
+                                $board_tag_div.find("[data-tag='"+data.s_tag+"']").parent(".tag-follow").remove();
+
+                                sir_global_obj.tag_delete_after();
+                            }
+                        } else {
+                            othis.fn_error();
+                        }
+                    }
+                );
+            } else {
+                var that_tag = $board_tag_div.children("div").find("[data-tag='"+s_tag+"']")[0];
+                sir_global_obj.favorite_tag_delete( that_tag, "delete" );
+            }
+        }
+    });
+
+    if (typeof(jQuery.ui) != 'undefined' && typeof(jQuery.ui.dialog) != 'undefined'){
+            sir_global_obj.dialog_ui = $('<div></div>').addClass('dialog_preview_comment').dialog({
+                                    autoOpen: false,
+                                    title: '댓글 보기'
+                                });
+    }
+
+    $(document).on("click", ".view_popup_comment_btn", function(e){
+        e.preventDefault();
+
+        var wr_id = $(this).attr("data-wr_id"),
+            bo_table = (typeof(g5_bo_table) !== "undefined" && g5_bo_table !== null) ? g5_bo_table : '',
+            view_url = g5_bbs_url+'/view_comment.page.php?t=1';
+
+        if( wr_id && bo_table ){
+
+            var params = "ajax=1&wcomment=1&wr_id="+wr_id+"&bo_table="+bo_table+"&comment_mode=view";
+
+            var w = window,
+                d = document,
+                e = d.documentElement,
+                g = d.getElementsByTagName('body')[0],
+                x = w.innerWidth || e.clientWidth || g.clientWidth,
+                y = w.innerHeight|| e.clientHeight|| g.clientHeight,
+                width = 730 > x ? (x - 40) : 730,
+                height = 700 > y ? (y - 40) : 700;
+
+            $.ajax({
+                type:"POST",
+                data:params,
+                url : view_url,
+            }).done(function (res) {
+                if( res ){
+                    var option_vars = {
+                        width : width,
+                        height : height,
+                            position : { my: "center", at: "center", of: window }
+                    };
+                    sir_global_obj.dialog_ui.dialog('open').dialog(option_vars);
+                    $(".dialog_preview_comment").html(res);
+                    $(".ui-front").css({"z-index":1000});
+                }
+            });
+        }
+
+    });
+});
+var sir_content_embed = {
+    createYoutubeEmbed : function(str, key) {
+
+        var $html = jQuery(str),
+            $iframe = jQuery("<iframe>", { "src":"https://www.youtube.com/embed/"+key });
+        
+        if( ! $html.find($iframe).length ){
+            return str+'<div><iframe width="480" height="276" src="https://www.youtube.com/embed/' + key + '" frameborder="0" allowfullscreen></iframe></div>';
+        }
+        return str;
+    },
+
+    transformYoutubeLinks : function(text) {
+        if (!text) return text;
+        var self = this;
+
+        var linkreg = /(?:)<a([^>]+)>(.+?)<\/a>/g,
+            fullreg = /(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)([^& \n<]+)(?:[^ \n<]+)?/g,
+            regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([^& \n<]+)(?:[^ \n<]+)?/g,
+            resultHtml = String(text),
+            match = text.match(fullreg),
+            el_html = jQuery("<div/>").html(text),
+            keys = [];
+
+        if (match && match.length > 0) {
+
+            // get all links and put in placeholders
+            var matchlinks = text.match(linkreg);
+
+            if (matchlinks && matchlinks.length > 0) {
+                for (var i=0; i < matchlinks.length; i++) {
+                    var matchParts = matchlinks[i].split(regex),
+                        match_key = matchParts[1] ? matchParts[1].replace(/[&\/\\#,+()$~%.'":*?<>{}]/g, '') : '';
+
+                    if( match_key && keys.indexOf(match_key) === -1 ){
+                        keys.push( match_key );
+                        resultHtml = resultHtml.replace(matchlinks[i], self.createYoutubeEmbed(matchlinks[i], match_key) );
+                    }
+                }
+            }
+
+            // now go through the matches one by one
+            for (var i=0; i < match.length; i++) {
+                // get the key out of the match using the second regex
+                var matchParts = match[i].split(regex),
+					match_key = matchParts[1] ? matchParts[1].replace(/[&\/\\#,+()$~%.'":*?<>{}]/g, '') : '';
+
+                if( match_key && ! $(el_html).find("a:contains('"+match[i]+"')").length ){
+                    if( keys.indexOf(match_key) === -1 ){
+                        keys.push( match_key );
+                        resultHtml = resultHtml.replace(match[i], self.createYoutubeEmbed(match[i], match_key) );
+                    }
+                }
+            }
+        }
+
+        return resultHtml;
+    },
+    start_resize : function(event){
+        if( jQuery(event.data.el).length ) {
+            jQuery(event.data.el).fitVideo();
+        }
+    }
+}
+
+function youtube_content_replace(selector, i){
+
+    var cm = (typeof selector !== 'undefined') ? selector : ".vcmt_content";
+    jQuery(window).off('resize', sir_content_embed.start_resize);
+
+    jQuery(cm).each(function(index, item){
+        
+        var ori_html = jQuery(item).html();
+        jQuery(item).html( sir_content_embed.transformYoutubeLinks(ori_html) );
+    });
+    
+    sir_content_embed.start_resize({data:{el:cm, inum:i}});
+    jQuery(window).on("resize", {el:cm, inum:i}, sir_content_embed.start_resize);
+}
+
+function ajax_href_check(obj, request_arr, inAjax, url){
+    if(obj.prop('href') == 'javascript:void(0)') {
+        if(inAjax == false) {
+            inAjax = true;
+        } else {
+            alert("현재 통신중입니다. 잠시후 다시 시도해주세요.");
+            return false;
+        }
+        $.ajax({
+            method: "POST",
+            url: url,
+            data: request_arr,
+            async: true,
+            cache: false,
+            dataType: "json",
+            success: function(data) {
+                if(data.prev != null){
+                    location.href = data.prev.href;
+                }else{
+                    alert(obj.find('span').html() + '이 없습니다.');                    
+                }
+                inAjax = false;
+            },
+            error:function(request,status,error){
+                inAjax = false;
+                alert("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error);
+            }
+        });
+    }
+}

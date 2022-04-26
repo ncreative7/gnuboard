@@ -1,0 +1,16 @@
+
+$(function() {
+    $(".brdsns-onoff").on("click", function() {
+		var ptn = /brdsns-index-\d/g,
+			tmp = ptn.exec( $(this).attr("class") ),
+			idx = tmp[0].replace(/[^0-9]/g, '');
+
+		$(".brdsns-wrap-"+idx).toggle();
+        
+        if( $(".brdsns-wrap-"+idx).is(":hidden") ) {
+            $(this).removeClass("fa-arrow-up").addClass("fa-arrow-down");
+        } else {
+            $(this).removeClass("fa-arrow-down").addClass("fa-arrow-up");
+        }
+    });
+});
