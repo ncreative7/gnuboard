@@ -1,0 +1,63 @@
+function printObject(data)
+{
+    document.write (data);
+}
+
+/**
+ * 플래시를 출력
+ *
+ */
+function printFlash(src, width, height)
+{
+    if(!src || !width || !height)
+    {
+        return null;
+    }
+
+    var classid  = "clsid:d27cdb6e-ae6d-11cf-96b8-444553540000";
+    var codebase = "http://fpdownload.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=7,0,0,0";
+    var wmode    = "transparent";
+    var quality  = "high";
+    var plugin   = "http://www.macromedia.com/go/getflashplayer";
+    var type     = "application/x-shockwave-flash";
+
+    var html = "<object id='sirflash' classid='" + classid + "' "
+             + "codebase='" + codebase + "' "
+             + "width='" + width + "' height='" + height + "'> "
+             + "<param name='wmode' value='" + wmode + "'>"
+             + "<param name='movie' value='" + src + "'>"
+             + "<param name='quality' value='" + quality + "'>"
+             + "<embed src='" + src + "' "
+             + "quality='" + quality + "' pluginspage='" + plugin + "' type='" + type + "' "
+             + "width='" + width + "' height='" + height + "'></embed></object>";
+
+    printObject(html);
+}
+
+function Timer() {
+    this.end_time = null;
+    this.id = null;
+    this.tid = null;
+    this.run = function() {
+        //alert(this.xxx);
+        var timer = document.getElementById(this.id);
+
+        dd = Math.floor(this.end_time/(60*60*24));
+        hh = Math.floor((this.end_time%(60*60*24))/(60*60));
+        mm = Math.floor(((this.end_time%(60*60*24))%(60*60))/60);
+        ii = Math.floor((((this.end_time%(60*60*24))%(60*60))%60));
+
+        var str = "";
+
+        if (dd > 0) str += dd + "일 ";
+        if (hh > 0) str += hh + "시간 ";
+        if (mm > 0) str += mm + "분 ";
+        str += ii + "초 ";
+
+        timer.innerHTML = str;
+
+        this.end_time--;
+
+        if (this.end_time < 0) clearInterval(this.tid);
+    }
+}

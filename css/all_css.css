@@ -1,14 +1,126 @@
-#wrap{
-    padding: 20px;
-}
-
 *{
     font-family: "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", sans-serif;
     box-sizing: border-box;
     text-decoration: none;
     font-size: 14px;
+    margin: 0 auto;
+}
+a{color: black;}
+
+#wrap{padding: 20px;}
+
+/* 콘텐츠영역 */
+#container_wrap{
+    width: 100%;
+    padding : 20px 0;
+    float: left;
 }
 
-a{
-    color: black;
+#container_wrap > #container{
+    max-width: 1000px;
+    width: 100%;
+    margin: 0 auto;
 }
+
+#container_wrap > #container #left_view{
+    width: 60%;
+    margin-right: 2%;
+    float: left;
+}
+
+#container_wrap > #container #rigth_view{
+    width: 38%;
+    float: right;
+}
+/* 콘텐츠왼쪽영역 */
+
+.left{
+    width: 100%; 
+    text-align: center;
+    border: 1px solid #fff;
+    margin-bottom: 10px;
+    position: relative;
+}
+
+#left_view #main_banner{
+    height: 100px;
+    line-height: 100px;
+    background-color: gray;
+}
+
+#left_view #bx_icons{
+    height: 120px;
+    line-height: 120px;
+    background-color: gray;
+}
+
+#left_view #dx_left_tabs1{
+    height: 200px;
+    line-height: 200px;
+    background-color: gray;
+}
+
+#left_view #dx_left_tabs2{
+    height: 230px;
+    line-height: 230px;
+    background-color: gray;
+}
+
+#left_view #dx_left_ads1{
+    height: 100px;
+    line-height: 100px;
+    background-color: gray;
+}
+
+#left_view #dx_service{
+    height: 200px;
+    line-height: 200px;
+    background-color: gray;
+}
+
+/* 오른쪽영역 */
+.right{
+    width: 100%; 
+    text-align: center;
+    border: 1px solid #fff;
+    margin-bottom: 10px;
+    position: relative;
+}
+
+#rigth_view #login_box{
+    height: 150px;
+    line-height: 150px;
+    background-color: gray;
+}
+
+#rigth_view #notice{
+    height: 50px;
+    line-height: 50px;
+    background-color: gray;
+}
+
+#rigth_view #dx_rigth_tabs1{
+    height: 200px;
+    line-height: 200px;
+    background-color: gray;
+}
+
+#rigth_view #dx_rigth_tabs2{
+    height: 200px;
+    line-height: 200px;
+    background-color: gray;
+}
+
+#rigth_view #dx_noanswer{
+    height: 100px;
+    line-height: 100px;
+    background-color: gray;
+}
+
+#rigth_view #dx_right_banner{
+    height: 250px;
+    line-height: 250px;
+    background-color: gray;
+}
+
+/* 하단 푸터 영역 */

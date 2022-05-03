@@ -1,0 +1,55 @@
+function userAlert(key = "", val = "") {
+    let arr = {
+        "": "",
+
+        "val_empty": "내용을 입력해주세요.",
+        "img_check": "이미지 파일만 업로드 가능합니다.",
+        "img_required": "이미지를 등록해주세요.",
+
+        "copyToClipboard": "복사가 완료되었습니다!",
+
+        "inp_url_check": "url을 입력해주세요.",
+        "inp_address_check": "주소를 입력해주세요.",
+        "inp_btn_name_check": "버튼명을 입력해주세요.",
+
+        "search_check": "검색 조건을 확인하세요.",
+
+        "answer_min_count": "답변은 " + val + "개 이상 등록해야 합니다.",
+        "answer_max_count": "답변은 " + val + "개까지 등록 가능합니다.",
+        "result_min_count": "결과는 " + val + "개 이상 등록해야 합니다.",
+        "event_min_count": "경품은 " + val + "개 이상 등록해야 합니다.",
+        "test_count": "사용자 결과가 존재해 삭제할 수 없습니다.",
+
+        "decimal_length": "소숫점 아래 " + val + "글자까지 입력 가능합니다.",
+        "number_min_count": "최소 " + val + "까지 입력 가능합니다",
+        "number_max_count": "최대 " + val + "까지 입력 가능합니다",
+
+        "score_dupl": "점수는 중복될 수 없습니다.",
+        "connect_result_required": "연계설정 or 결과설정의 값을 입력해주세요.",
+
+        "prize_entry": "응모가 완료되었습니다.",
+        "comment_submit": "의견이 등록되었습니다.",
+
+        "prize_status_delivery": "배송정보 입력에서 처리해주십시오.\n배송정보는 당첨자에게만 입력할 수 있습니다.",
+        "send_delivery_message": "알림톡 발송이 완료되었습니다.",
+    };
+
+    return alert(arr[key]);
+}
+
+function userConfirm(key = "", val = "") {
+    let arr = {
+        "": "",
+
+        "remove_img": "이미지를 삭제하시겠습니까?",
+        "change_img": "이미지를 변경하시겠습니까?",
+        "test_status_change": val + " 테스트 상태를 변경하시겠습니까?",
+
+        "auto_draw": "자동으로 당첨자를 추첨하시겠습니까?\n실행 시 당첨자에게 알림톡이 발송되고 취소할 수 없습니다.",
+        "prize_status_win": "당첨자로 선정하시겠습니까?\n실행 시 당첨자에게 알림톡이 발송되고 취소할 수 없습니다.",
+        "prize_status_lose": "낙첨 처리하시겠습니까?",
+        "confirm_delivery_message": "배송정보 알림톡을 " + val + "발송하시겠습니까?",
+    };
+
+    return confirm(arr[key]);
+}

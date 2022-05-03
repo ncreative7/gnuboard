@@ -1,11 +1,11 @@
 #hd_wrap{
     width: 100%;
-    min-width: 1000px;
     background-color: #fff;
     border-bottom: 1px solid #ccc;
     box-shadow: 1px 1px 1px 0 rgb(0 0 0 / 5%);
     position: relative;
     float: left;
+    margin: 0 auto;
 }
 /* 로고 */
 #hd_logo a{

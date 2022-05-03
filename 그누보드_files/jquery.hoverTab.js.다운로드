@@ -1,0 +1,226 @@
+/*
+사용예
+$("#sir_sol_g4").hoverTab(
+    {
+        mEvent: "mouseover",
+        kEvent: "focusin",
+        oEvent: "mouseout focusout",
+        timeout: 150,
+        selector: "h3",
+        hoverclass: "sir_lt_hon",
+        content: "div",
+        contentclass: "sir_lt_on",
+        anchoract: false,
+        offEvent : "click focusin"
+    }
+);
+*/
+
+(function($) {
+    $.fn.hoverTab = function(option) {
+        var cfg = {
+            mEvent: "mouseover",
+            kEvent: "focusin",
+            oEvent: "mouseout focusout",
+            timeout: 150,
+            selector: "h3",
+            hoverclass: "sir_lt_hon",
+            content: "div",
+            contentclass: "sir_lt_on",
+            anchoract: false,
+            offEvent : "",
+            intervaltime : "",
+            autoDirection : "next",
+            startindex : 0,
+
+            // CALLBACKS
+            oneventAfter: function() {},
+            onstartLoad: function() {}
+        };
+
+        if(option && typeof option == "object") {
+            cfg = $.extend(cfg, option);
+        }
+        
+        this.interval = null;
+
+        var othis = this,
+            $el = this.find(cfg.selector);
+        var $content = this.find(cfg.content);
+
+        if( isNaN(cfg.startindex) ){
+            cfg.startindex = 0;
+        }
+
+        var idx = cfg.startindex,
+            delay,
+            clickidx = cfg.startindex;
+        
+        cfg.mEventgoto = function(action){
+
+            idx = $el.index($(this));
+            var anchoract = false;
+            if(cfg.anchoract == true && $(this).hasClass(cfg.hoverclass))
+                anchoract = true;
+
+            $el.removeClass(cfg.hoverclass);
+            $(this).addClass(cfg.hoverclass);
+            delay = setTimeout( function() { 
+                showcontent(idx);
+
+                othis.clearTimer();
+                othis.startAuto();
+
+                // oneventAfter callback
+                cfg.oneventAfter(idx, clickidx, action);
+
+                clickidx = idx;
+
+            }, cfg.timeout );
+
+            if(cfg.anchoract == true ) {
+                return anchoract;
+            }
+        }
+
+        $el.on("custom_action", function() {
+            cfg.mEventgoto.apply(this);
+        });
+
+        if(cfg.mEvent) {
+            $el.on(""+cfg.mEvent+"", function() {
+                var $this = $(this);
+                cfg.mEventgoto.apply(this, [cfg.mEvent]);
+                
+                setTimeout( function() {
+                    $this.siblings().each(function() {
+                        $(this).children("a").removeData("is_active");
+                    });
+                    $this.children("a").data("is_active", true);
+                }, 200);
+            });
+        }
+
+        if(cfg.kEvent) {
+            $el.on(""+cfg.kEvent+"", function() {
+                
+                var $this = $(this);
+
+                idx = $el.index($(this));
+                $el.removeClass(cfg.hoverclass);
+                $this.addClass(cfg.hoverclass);
+                delay = setTimeout( function() { 
+                    showcontent(idx);
+
+                    othis.clearTimer();
+                    othis.startAuto();
+
+                    // oneventAfter callback
+                    cfg.oneventAfter(idx);
+
+                }, 0 );
+
+                setTimeout( function() {
+                    $this.siblings().each(function() {
+                        $(this).children("a").removeData("is_active");
+                    });
+                    $this.children("a").data("is_active", true);
+                }, 200);
+            });
+        }
+
+        if(cfg.oEvent) {
+            $el.on(""+cfg.oEvent+"", function() {
+                $(this).data("over", false);
+                $el.removeClass(cfg.hoverClass);
+                $content.each(function(index) {
+                    if($(this).hasClass(cfg.contentclass)) {
+                        $el.eq(index).addClass(cfg.hoverclass);
+                        return false;
+                    }
+                });
+                clearTimeout(delay);
+            });
+        }
+
+        if(cfg.offEvent) {
+            $el.off(""+cfg.offEvent+"");
+        }
+
+        var showcontent = function(idx)
+        {
+            if($el.eq(idx).hasClass(cfg.hoverclass)) {
+                $content.removeClass(cfg.contentclass);
+                $content.eq(idx).addClass(cfg.contentclass);
+            }
+        }
+
+        this.onPrev = function(){
+
+            var moveidx = idx - 1;
+
+            if(moveidx < 0){
+                moveidx = $el.length - 1;
+            }
+
+            //$el.eq(moveidx).trigger(""+cfg.mEvent+"");
+
+            cfg.mEventgoto.apply($el.eq(moveidx));
+        }
+
+        this.startAuto = function(preventControlUpdate){
+            var othis = this;
+            
+            if( othis.interval ){
+                return;
+            }
+
+            if( cfg.intervaltime ){
+                othis.interval = setInterval(function(){
+                    cfg.autoDirection == 'next' ? othis.onNext() : othis.onPrev();
+                }, cfg.intervaltime);
+            }
+        }
+
+		/**
+		 * clear
+		 */
+        this.clearTimer = function(){
+            var othis = this;
+
+            if( othis.interval ){
+                clearInterval(othis.interval);
+                othis.interval = null;
+            }
+        }
+
+        this.onNext = function(){
+
+            var othis = this,
+                moveidx = idx + 1;
+
+            if(moveidx >= $el.length){
+                moveidx = 0;
+            }
+
+            //$el.eq(moveidx).trigger(""+cfg.mEvent+"");
+
+            cfg.mEventgoto.apply($el.eq(moveidx));
+
+        }
+
+        this.init = function(){
+            var othis = this;
+
+            cfg.onstartLoad(cfg.startindex);
+            
+            $el.eq(idx).children("a").data("is_active", true);
+
+            setTimeout( function() { othis.startAuto() }, 1 );
+        }
+
+        this.init();
+
+        return this;
+    };
+}(jQuery));
