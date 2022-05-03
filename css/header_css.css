@@ -1,0 +1,78 @@
+#hd_wrap{
+    width: 100%;
+    min-width: 1000px;
+    background-color: #fff;
+    border-bottom: 1px solid #ccc;
+    box-shadow: 1px 1px 1px 0 rgb(0 0 0 / 5%);
+    position: relative;
+    float: left;
+}
+/* 로고 */
+#hd_logo a{
+    display: flex;
+    align-items: center;
+}
+
+#hd_logo img[alt='logo']{
+    width: 50px; height: 50px;
+    margin-right: 10px;
+}
+
+#hd_logo img[alt='logoname']{
+    width: 45px; height: 20px;
+}
+/* 검색창 */
+#hd_search{
+    border: 1px solid #bbb;
+    border-radius: 3px;
+    position: absolute;
+    top: 10px; left: 120px;
+}
+
+#hd_search input{
+    width: 400px; height: 30px;
+    line-height: 30px;
+    padding: 5px;
+    background-color: #eee;
+    border: 0;
+    color: #555;
+    font-size: 1rem;
+}
+
+#hd_search > #hd_search_btn{
+    width: 30px; height: 30px;
+    line-height: 30px;
+    border: 0;
+    float: right;
+}
+
+/* gnb */
+#gnb_wrap{width: 100%; padding: 10px;}
+#gnb{width: 100%; position: relative; float: left;}
+#gnb_wrap .gnb_all_btn{
+    
+}
+
+#gnb_wrap .item{
+    height: 40px; line-height: 40px;
+    background-color: #fff;
+    color: #555;
+    font-weight: bold;
+    text-align: center;
+    float: left;
+    margin-right: 30px;
+    position: relative;
+}
+
+#gnb_wrap .gnb_all_btn{
+    border: none;
+    font-size: 1rem;
+}
+
+#gnb_wrap .gnb_add{
+    float: right;
+}
+
+#gnb_wrap .gnb_add a{
+    margin-left: 30px;
+}

@@ -1,0 +1,14 @@
+#wrap{
+    padding: 20px;
+}
+
+*{
+    font-family: "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", sans-serif;
+    box-sizing: border-box;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+a{
+    color: black;
+}
