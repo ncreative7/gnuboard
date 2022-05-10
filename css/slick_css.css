@@ -5,11 +5,11 @@
   }
   .slider-wrap > .slider .content{
     position: relative ;
+    overflow: hidden;
   }
-  .slider-wrap > .slider .content > img{
-    width: 100%;
-    display: block;
-    background-size: cover;
-    background-position: center;
+  .slider-wrap > .slider .content > .content_img{
     background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    object-fit: cover;
   }

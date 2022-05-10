@@ -5,9 +5,36 @@
     font-size: 14px;
     margin: 0 auto;
 }
+
 a{color: black;}
 
-#wrap{padding: 20px;}
+#wrap{padding: 20px; width: 1100px; margin: 0 auto;}
+
+/*버튼*/
+#btn{
+    position: fixed ;
+    bottom: 30px ;
+    right: 30px ;
+}
+
+#btn button{
+    display: block;
+    margin: 15px 0;
+    width: 45px;
+    height: 45px;
+    background: #ffffff;
+    border-radius: 45px;
+    box-shadow: 3px 3px 5px rgb(0 0 0 / 30%);
+    outline: none;
+    border: none;
+}
+
+.btn_img img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
 
 /* 콘텐츠영역 */
 #container_wrap{
@@ -23,17 +50,17 @@ a{color: black;}
 }
 
 #container_wrap > #container #left_view{
-    width: 60%;
+    width: 68%;
     margin-right: 2%;
     float: left;
 }
 
 #container_wrap > #container #rigth_view{
-    width: 38%;
+    width: 30%;
     float: right;
 }
-/* 콘텐츠왼쪽영역 */
 
+/* 콘텐츠왼쪽영역 */
 .left{
     width: 100%; 
     text-align: center;
@@ -42,40 +69,157 @@ a{color: black;}
     position: relative;
 }
 
-#left_view #main_banner{
-    height: 100px;
-    line-height: 100px;
-    background-color: gray;
+/*아이콘 메뉴 슬라이드 영역*/
+
+#slick_icons{
+    width: 680px; height: 110px;
+    /* background-color: #F0F1F3;  */
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #F0F1F3;
 }
 
-#left_view #bx_icons{
-    height: 120px;
-    line-height: 120px;
-    background-color: gray;
+.content{
+    overflow: hidden ;
 }
 
-#left_view #dx_left_tabs1{
+.content-title{
+    height: 110px;
+    float: left;
+    width: 15%;
+}
+
+.content-title img{
+    width: 100%;
+    height: 100%;
+}
+
+.content-list{
+    float: left;
+    position: relative;
+    width: 80%; height: 100%;
+    padding: 20px;
+}
+
+.content_next{
+    width: 5%; height: 110px;
+    background-color: #F0F1F3;
+    float: right;
+    position: absolute;
+    top:0; right: 0;
+}
+
+.content_next i{
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.content-item{
+    float: left;
+    position: relative;
+    display: block;
+    margin-right: 15px;
+}
+
+.content-item .icon{
+    background-color: #F0F1F3;
+    width: 50px; height: 50px;
+    border-radius: 50%;
+    position: relative;
+    display: inline-block;
+    text-align: center;
+}
+
+.content-item .icon i{
+    position: absolute;
+    top:50%; left: 50%;
+    transform: translate(-50%,-50%);
+}
+
+.content-item .title{
+    display: block;
+    white-space: nowrap;
+    text-align: center;
+    margin-top: 5px;
+}
+
+/* 슬릭 슬라이드 메인배너영역 */
+
+/* 슬릭 슬라이드 탭영역 */
+#left_box1{
+    height: 200px;
+}
+
+#left_box1 #slick_left_tabs1{
+    width: 65%; height: 100%;
+    background-color: orange;
+    float: left;
+}
+
+#left_box1 #hot_list{
+    width: 35%; height: 100%;
+    background-color: #F0F1F3;
+    float: right;
+    padding: 10px;
+}
+
+#left_box1 #hot_list .hot_list_top{
+    width: 100%; height: 60%;
+    text-align: left;
+}
+
+#left_box1 #hot_list .hot_list_top h3{
+    margin-bottom: 10px;
+}
+
+#left_box1 #hot_list .hot_list_top li{
+    margin-bottom: 10px;
+}
+
+
+/* 슬릭 슬라이드 탭영역2 */
+
+#left_box2{
+    height: 220px;
+}
+
+#left_box2 #slick_left_tabs2{
+    width: 65%; height: 100%;
+    background-color: orange;
+    float: left;
+}
+
+#left_box2 #hot_content{
+    width: 35%; height: 100%;
+    background-color: #F0F1F3;
+    float: right;
+    padding: 10px;
+}
+
+#left_box2 #hot_content h3{
+    margin-bottom: 10px;
+    text-align: left;
+}
+
+#left_box2 #hot_content .hot_content_img{
+    display: block;
+    margin-top: 25px;
+}
+
+#left_box2 #hot_content .hot_content_img img{
+    margin-bottom: 10px;
+}
+
+
+#left_view #slick_left_ads1{
+    background-color: #F0F1F3;
+}
+
+#left_view #slick_service{
     height: 200px;
     line-height: 200px;
-    background-color: gray;
-}
-
-#left_view #dx_left_tabs2{
-    height: 230px;
-    line-height: 230px;
-    background-color: gray;
-}
-
-#left_view #dx_left_ads1{
-    height: 100px;
-    line-height: 100px;
-    background-color: gray;
-}
-
-#left_view #dx_service{
-    height: 200px;
-    line-height: 200px;
-    background-color: gray;
+    background-color: #F0F1F3;
 }
 
 /* 오른쪽영역 */
@@ -87,40 +231,217 @@ a{color: black;}
     position: relative;
 }
 
-#rigth_view #login_box{
+/*로그인*/
+#login_box{
     height: 150px;
-    line-height: 150px;
-    background-color: gray;
+    background-color: #F0F1F3;
+    padding: 10px;
+    position: relative;
 }
 
+#login_box fieldset{
+    position: relative;
+    width: 100%;
+    height: 83px;
+
+    border-bottom: 1px dashed #d6dee4;
+    text-align: left;
+    display: block;
+}
+
+#login_box #login_id, #login_pw{
+    display: inline-block;
+    width: 185px;
+    height: 28px;
+    line-height: 28px;
+    padding: 0 5px;
+    border: 1px solid #d6dee4;
+    background: #fff;
+}
+
+#login_box #login_id{
+    border-bottom: none;
+}
+
+#login_box #login_submit{
+    position: absolute;
+    top: 0;
+    display: inline-block;
+    width: 92px;
+    height: 56px;
+    border: 1px solid #d6dee4;
+    background: #fff;
+    color: #000;
+    font-weight: bold;
+    vertical-align: top;
+    border-left: none;
+}
+
+#login_box #login_auto_wrap{
+    display: block;
+    margin-top: 5px;
+    float: left;
+}
+
+#login_box #login_auto_wrap label{
+    font-size: 11px;
+}
+
+#login_box #login_sub {
+    margin-top: 8px;
+}
+
+#login_box #login_sub b, #login_sub a{
+    font-size: 11px;
+    float: right;
+    margin-left: 5px;
+}
+
+#login_sns{
+    width: 100%; height: 100%;
+    display: block;
+    overflow: hidden;
+    padding: 10px;
+}
+
+#login_sns .login_icon img{
+    width: 35px; height: 35px;
+}
+
+
+/*공지영역*/
 #rigth_view #notice{
     height: 50px;
+    border: 1px solid #F0F1F3;
+    position: relative;
+}
+
+#notice h2{
+    width: 20%; height: 50px;
     line-height: 50px;
-    background-color: gray;
+    background-color: #F0F1F3;
+    font-weight: bold;
+    display: block;
+    float: left;
 }
 
-#rigth_view #dx_rigth_tabs1{
+#notice .notice_title{
+    width: 80%; height: 100%;
+    float: right;
+    padding: 7px;
+}
+
+#notice .notice_title li{
+    text-align: left;
+    margin-bottom: 5px;
+}
+
+/* 슬릭 슬라이드 탭영역 */
+#rigth_view #slick_rigth_tabs1{
+    /* height: 200px; */
+    border: 1px solid #D6DEE4;
+}
+
+#slick_rigth_tabs1 .tabs{
+    width: 100%; height: 37px;
+    background-color: #F0F1F3;
+}
+
+#slick_rigth_tabs1 .tabs h3{
+    width: 30%; height: 37px;
+    line-height: 37px;
+    display: inline-block;
+    float: left;
+}
+
+#slick_rigth_tabs1 .tabs h3.active{
+    background-color: #fff;
+    border-right: 1px solid #D6DEE4;
+}
+
+#slick_rigth_tabs1 .tabs_content{
+    display: block;
+    padding: 13px;
+}
+
+#slick_rigth_tabs1 .tabs_content li{
+    text-align: left;
+    margin-bottom: 10px;
+}
+
+#slick_rigth_tabs1 .tabs_content li:last-child{
+    margin-bottom: 0;
+}
+
+
+
+
+
+
+
+#rigth_view #slick_rigth_tabs2{
     height: 200px;
     line-height: 200px;
-    background-color: gray;
+    background-color: #F0F1F3;
 }
 
-#rigth_view #dx_rigth_tabs2{
-    height: 200px;
-    line-height: 200px;
-    background-color: gray;
-}
-
-#rigth_view #dx_noanswer{
+#rigth_view #slick_noanswer{
     height: 100px;
     line-height: 100px;
-    background-color: gray;
+    background-color: #F0F1F3;
 }
 
-#rigth_view #dx_right_banner{
+#rigth_view #request_banner{
     height: 250px;
-    line-height: 250px;
-    background-color: gray;
+    background-color: #F0F1F3;
+}
+
+#rigth_view #request_banner{
+    width: 100%;
+    height: 100%;
 }
 
 /* 하단 푸터 영역 */
+#ft_wrap{
+    width: 100%;
+    padding: 40px 50px;
+    border-top: 1px solid #F0F1F3;
+    float: left;
+}
+
+#ft_wrap #ft_service{
+    width: 100%;
+}
+
+#ft_service .ft_col{
+    float: left;
+    margin-right: 7%;
+}
+
+#ft_service .ft_col:last-child{
+    float: left;
+    margin-right: 0;
+}
+
+#ft_service .ft_col li{
+    margin-bottom: 10px;    
+}
+
+#ft_service .ft_col .title{
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+#ft_service .other a{
+    display: block;
+    width: 150px; 
+    border: 1px solid #F0F1F3;
+    border-radius: 50px;
+    line-height: 30px;
+    padding-left: 15px;
+}
+
+#ft_service .other a:hover{
+    background-color: #d6dee4;
+}
+
